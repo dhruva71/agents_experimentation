@@ -1,12 +1,15 @@
+import math
 import os
 
 import yaml
-from openai import OpenAI
-from openai.types.chat import ChatCompletionMessage
+from openai import OpenAI, Stream
+from openai.types.chat import ChatCompletionMessage, ChatCompletion, ChatCompletionChunk
+from openai.types.chat.chat_completion import ChoiceLogprobs
 
 
 class LLMAgent:
-    def __init__(self, api_key: str, model_id: str = "deepseek/deepseek-v4-flash", prompts_yaml_path: str = 'prompts/prompts.yaml'):
+    def __init__(self, api_key: str, model_id: str = "deepseek/deepseek-v4-flash",
+                 prompts_yaml_path: str = 'prompts/prompts.yaml'):
         self.api_key = api_key
         self.model_id = model_id
         print(f'Using model: {self.model_id}')
@@ -28,13 +31,16 @@ class LLMAgent:
             api_key=os.getenv("OPENROUTER_API_KEY"),
         )
 
-    def query_llm(self, user_query: str, reasoning_enabled: bool = False, **kwargs) -> ChatCompletionMessage:
+    def query_llm(self, user_query: str, reasoning_enabled: bool = False, **kwargs) -> ChatCompletion | Stream[
+        ChatCompletionChunk]:
         """
         Get response from model `model_id` for `user_query`.
         :param user_query:
         :param reasoning_enabled: Whether reasoning is enabled or not.
         :return: JSON response
         """
+        print(f'Using kwargs: {kwargs}')
+
         # noinspection bad-argument-type
         response = self.client.chat.completions.create(
             model=self.model_id,
@@ -49,5 +55,18 @@ class LLMAgent:
             **kwargs
         )
 
-        response = response.choices[0].message
+        # response = response.choices[0].message
         return response
+
+    def process_logprobs(self, response: ChatCompletion) -> ChoiceLogprobs | None:
+        logprobs = response.choices[0].logprobs
+        if logprobs is not None and logprobs.content is not None:
+            for logprob in logprobs.content:
+                probability = math.exp(logprob.logprob)
+                confidence_label = "high" if probability > 0.9 else "low"
+                considered_tokens = []
+                if logprob.top_logprobs is not None:
+                    for toplogprob_token in logprob.top_logprobs:
+                        considered_tokens.append(toplogprob_token.token)
+                print(f'Token: {logprob.token}, logprob: {logprob.logprob}, considered_tokens: {considered_tokens}, probability: {probability}, confidence: {confidence_label}')
+        return logprobs

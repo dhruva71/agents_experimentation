@@ -16,9 +16,13 @@ if not api_key:
 llm = llmagent.LLMAgent(api_key=api_key, model_id=models[selected_model_index])
 
 query = "Display budget vs actual for FY25 for department IT"
-response = llm.query_llm(user_query=query, max_completion_tokens=100, stop=['Observation'])
+response = llm.query_llm(user_query=query, max_completion_tokens=100, stop=['Observation'], logprobs=True,
+                         top_logprobs=10)
 
 print(response)
-if response.content is not None: # split for readability
-    if "action" in response.content:
+logprobs = llm.process_logprobs(response)
+content = response.choices[0].message.content
+if content is not None:  # split for readability
+    if "action" in content:
         print("Response contains action")
+        print(f'{content=}')
