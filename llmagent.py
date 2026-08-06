@@ -3,7 +3,7 @@ import os
 
 import yaml
 from openai import OpenAI, Stream
-from openai.types.chat import ChatCompletionMessage, ChatCompletion, ChatCompletionChunk
+from openai.types.chat import ChatCompletion, ChatCompletionChunk
 from openai.types.chat.chat_completion import ChoiceLogprobs
 
 
@@ -12,6 +12,7 @@ class LLMAgent:
                  prompts_yaml_path: str = 'prompts/prompts.yaml'):
         self.api_key = api_key
         self.model_id = model_id
+        self.response = None
         print(f'Using model: {self.model_id}')
 
         with open(prompts_yaml_path, 'r') as f:
@@ -55,11 +56,15 @@ class LLMAgent:
             **kwargs
         )
 
-        # response = response.choices[0].message
+        self.response = response
         return response
 
-    def process_logprobs(self, response: ChatCompletion) -> ChoiceLogprobs | None:
-        logprobs = response.choices[0].logprobs
+    def process_logprobs(self) -> ChoiceLogprobs | None:
+        """
+        Process log probabilities from the last response.
+        :return: Log probabilities or None if not available.
+        """
+        logprobs = self.response.choices[0].logprobs
         if logprobs is not None and logprobs.content is not None:
             for logprob in logprobs.content:
                 probability = math.exp(logprob.logprob)
@@ -69,4 +74,6 @@ class LLMAgent:
                     for toplogprob_token in logprob.top_logprobs:
                         considered_tokens.append(toplogprob_token.token)
                 print(f'Token: {logprob.token}, logprob: {logprob.logprob}, considered_tokens: {considered_tokens}, probability: {probability}, confidence: {confidence_label}')
+        else:
+            print("Log probabilities not available in the response.")
         return logprobs
