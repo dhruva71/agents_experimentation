@@ -1,6 +1,6 @@
 import math
 import os
-
+import logging
 import yaml
 from openai import OpenAI, Stream
 from openai.types.chat import ChatCompletion, ChatCompletionChunk
@@ -13,7 +13,10 @@ class LLMAgent:
         self.api_key = api_key
         self.model_id = model_id
         self.response = None
-        print(f'Using model: {self.model_id}')
+        self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(logging.DEBUG)
+
+        self.logger.info(f'Using model: {self.model_id}')
 
         with open(prompts_yaml_path, 'r') as f:
             config = yaml.safe_load(f.read())
@@ -22,7 +25,7 @@ class LLMAgent:
             self.system_prompt = config["system_prompt_2"]
         else:
             # TODO log this better
-            print("No system_prompt provided")
+            self.logger.info("No system_prompt provided")
             self.system_prompt = ""
 
         print(f'{self.system_prompt=}\n')
@@ -40,7 +43,7 @@ class LLMAgent:
         :param reasoning_enabled: Whether reasoning is enabled or not.
         :return: JSON response
         """
-        print(f'Using kwargs: {kwargs}')
+        self.logger.debug(f'Using kwargs: {kwargs}')
 
         # noinspection bad-argument-type
         response = self.client.chat.completions.create(
@@ -73,7 +76,7 @@ class LLMAgent:
                 if logprob.top_logprobs is not None:
                     for toplogprob_token in logprob.top_logprobs:
                         considered_tokens.append(toplogprob_token.token)
-                print(f'Token: {logprob.token}, logprob: {logprob.logprob}, considered_tokens: {considered_tokens}, probability: {probability}, confidence: {confidence_label}')
+                self.logger.debug(f'Token: {logprob.token}, logprob: {logprob.logprob}, considered_tokens: {considered_tokens}, probability: {probability}, confidence: {confidence_label}')
         else:
-            print("Log probabilities not available in the response.")
+            self.logger.debug("Log probabilities not available in the response.")
         return logprobs

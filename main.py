@@ -1,10 +1,18 @@
+import logging
 import os
 
 from dotenv import load_dotenv
 
 import llmagent
 
+logger = logging.getLogger(__name__)
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s %(name)s %(levelname)s: %(message)s"
+)
+
 load_dotenv()
+logger.debug("Loading environment variables")
 
 models = ["openai/gpt-5.6-luna", "nvidia/nemotron-3-ultra-550b-a55b:free", "deepseek/deepseek-v4-flash"]
 selected_model_index = 2
