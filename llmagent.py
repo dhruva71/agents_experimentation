@@ -9,7 +9,14 @@ from openai.types.chat.chat_completion import ChoiceLogprobs
 
 class LLMAgent:
     def __init__(self, api_key: str, model_id: str = "deepseek/deepseek-v4-flash",
-                 prompts_yaml_path: str = 'prompts/prompts.yaml'):
+                 prompts_yaml_path: str = 'prompts/prompts.yaml', system_prompt_key: str = "system_prompt"):
+        """
+        Initialize an LLMAgent with a model_id and prompts_yaml_path.
+        :param api_key: API key for OpenRouter.
+        :param model_id: Model ID to use for the agent.
+        :param prompts_yaml_path: Path to the YAML file containing prompts.
+        :param system_prompt_key: Key to use for the system prompt in the YAML file.
+        """
         self.api_key = api_key
         self.model_id = model_id
         self.response = None
@@ -22,10 +29,9 @@ class LLMAgent:
             config = yaml.safe_load(f.read())
 
         if config is not None:
-            self.system_prompt = config["system_prompt_2"]
+            self.system_prompt = config[system_prompt_key]
         else:
-            # TODO log this better
-            self.logger.info("No system_prompt provided")
+            self.logger.warning("No system_prompt provided. Proceeding with an empty system prompt.")
             self.system_prompt = ""
 
         self.logger.debug(f'{self.system_prompt=}\n')
@@ -35,10 +41,10 @@ class LLMAgent:
             api_key=os.getenv("OPENROUTER_API_KEY"),
         )
 
-    def query_llm(self, user_query: str, reasoning_enabled: bool = False, **kwargs) -> ChatCompletion | Stream[
+    def execute_query(self, user_query: str, reasoning_enabled: bool = False, **kwargs) -> ChatCompletion | Stream[
         ChatCompletionChunk]:
         """
-        Get response from model `model_id` for `user_query`.
+        Execute a `user_query` against model `model_id` with `self.system_prompt` as the system prompt.
         :param user_query:
         :param reasoning_enabled: Whether reasoning is enabled or not.
         :return: JSON response
@@ -64,8 +70,8 @@ class LLMAgent:
 
     def process_logprobs(self) -> ChoiceLogprobs | None:
         """
-        Process log probabilities from the last response.
-        :return: Log probabilities or None if not available.
+        Process log probabilities from the last response received by the agent.
+        :return: Log probabilities, or None if not available.
         """
         logprobs = self.response.choices[0].logprobs
         if logprobs is not None and logprobs.content is not None:
