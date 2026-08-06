@@ -28,7 +28,7 @@ class LLMAgent:
             self.logger.info("No system_prompt provided")
             self.system_prompt = ""
 
-        print(f'{self.system_prompt=}\n')
+        self.logger.debug(f'{self.system_prompt=}\n')
 
         self.client = OpenAI(
             base_url="https://openrouter.ai/api/v1",
