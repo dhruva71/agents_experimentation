@@ -90,10 +90,12 @@ system_prompt_2: |
   
   ## Table schema for budget_data
   Schema for budget_data is as follows:
-  `calendar_month`: string
-  `calendar_year`: string
-  `budget_amount`: float
-  `actual_amount`: float
-  `department_name`: string
+  `calendar_month`: string, indicates the month of the calendar year
+  `calendar_year`: string, indicates the year of the calendar
+  `budget_amount`: float, indicates the budget amount for the month for the department
+  `actual_amount`: float, indicates the actual amount for the month for the department
+  `department_name`: string, indicates the department name
+  
+  A fiscal year begins on April 1st, and ends on March 31st of the following year. For example, FY25 is April 1st, 2025 to March 31st, 2026.
 
   Now begin! Reminder to ALWAYS use the exact characters `Final Answer:` when you provide a definitive answer.

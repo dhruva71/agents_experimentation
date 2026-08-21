@@ -23,7 +23,7 @@ if not api_key:
     raise ValueError("API key not set")
 agent = llmagent.LLMAgent(api_key=api_key, model_id=models[selected_model_index])
 
-query = "Display budget vs actual for FY25 for department IT"
+query = "Display budget vs actual for FY25 Q4 for department IT"
 logger.info(f"Executing with query: {query}")
 logger.debug(f"Selected model: {models[selected_model_index]}")
 reasoning_enabled = True
