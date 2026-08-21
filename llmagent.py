@@ -6,13 +6,16 @@ from openai import OpenAI, Stream
 from openai.types.chat import ChatCompletion, ChatCompletionChunk
 from openai.types.chat.chat_completion import ChoiceLogprobs
 
+from toolbox import Toolbox
+
 
 class LLMAgent:
     def __init__(self,
                  api_key: str,
                  model_id: str = "deepseek/deepseek-v4-flash",
                  prompts_yaml_path: str = 'prompts/prompts.yaml',
-                 system_prompt_key: str = "system_prompt_2"):
+                 system_prompt_key: str = "system_prompt_2",
+                 toolbox: Toolbox | None = None):
         """
         Initialize an LLMAgent with a model_id and prompts_yaml_path.
         :param api_key: API key for OpenRouter.
