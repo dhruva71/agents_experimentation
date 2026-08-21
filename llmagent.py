@@ -8,8 +8,11 @@ from openai.types.chat.chat_completion import ChoiceLogprobs
 
 
 class LLMAgent:
-    def __init__(self, api_key: str, model_id: str = "deepseek/deepseek-v4-flash",
-                 prompts_yaml_path: str = 'prompts/prompts.yaml', system_prompt_key: str = "system_prompt"):
+    def __init__(self,
+                 api_key: str,
+                 model_id: str = "deepseek/deepseek-v4-flash",
+                 prompts_yaml_path: str = 'prompts/prompts.yaml',
+                 system_prompt_key: str = "system_prompt_2"):
         """
         Initialize an LLMAgent with a model_id and prompts_yaml_path.
         :param api_key: API key for OpenRouter.
@@ -82,7 +85,25 @@ class LLMAgent:
                 if logprob.top_logprobs is not None:
                     for toplogprob_token in logprob.top_logprobs:
                         considered_tokens.append(toplogprob_token.token)
-                self.logger.debug(f'Token: {logprob.token}, logprob: {logprob.logprob}, considered_tokens: {considered_tokens}, probability: {probability}, confidence: {confidence_label}')
+                self.logger.debug(
+                    f'Token: {logprob.token}, logprob: {logprob.logprob}, considered_tokens: {considered_tokens}, probability: {probability}, confidence: {confidence_label}')
         else:
             self.logger.debug("Log probabilities not available in the response.")
         return logprobs
+
+    def extract_action(self, response: str | None = None) -> str | None:
+        """
+        Extract the action from the response.
+        :param response: String containing the response.
+        :return: Extracted action.
+        """
+        if response is None:
+            response=self.response.choices[0].message.content
+        # check if we have ```json in the string
+        if "```json" in response:
+            second_half = response.split('```json')[-1]
+            if '```' in second_half:
+                return response.split("```json")[1].split("```")[0]
+            return None
+        else:
+            return None

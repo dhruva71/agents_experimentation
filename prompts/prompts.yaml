@@ -39,7 +39,7 @@ system_prompt: |
 
   # Tables
   You have access to the following tables:
-  f5: contains budget and actual data for every month.
+  budget_data: contains budget and actual data for every month.
 
   Now begin! Reminder to ALWAYS use the exact characters `Final Answer:` when you provide a definitive answer.
   
@@ -86,10 +86,10 @@ system_prompt_2: |
 
   # Tables
   You have access to the following tables:
-  f5: contains budget and actual data for every month.
+  budget_data: contains budget and actual data for every month.
   
-  ## Table schema for F5
-  Schema for F5 is as follows:
+  ## Table schema for budget_data
+  Schema for budget_data is as follows:
   `calendar_month`: string
   `calendar_year`: string
   `budget_amount`: float

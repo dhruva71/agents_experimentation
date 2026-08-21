@@ -1,3 +1,4 @@
 .idea
 .env
 uv.lock
+__pycache__
